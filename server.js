@@ -3,6 +3,11 @@ const express = require("express");
 
 const app = express();
 app.use(express.json());
+
+// Middleware
+
+app.use("/api/auth", require("./Auth/route"));
+
 const PORT = 5000;
 
 //Connecting the Database
