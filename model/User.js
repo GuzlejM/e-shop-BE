@@ -6,7 +6,17 @@ const UserSchema = new Mongoose.Schema({
     unique: true,
     required: true,
   },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   password: {
+    type: String,
+    minlength: 6,
+    required: true,
+  },
+  confirmPassword: {
     type: String,
     minlength: 6,
     required: true,
