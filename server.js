@@ -1,12 +1,16 @@
 const connectDB = require("./db");
-const express = require("express");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const express = require("express");
+const { OAuth2Client } = require("google-auth-library");
 
 const { adminAuth, userAuth } = require("./Auth/Auth");
 
 const app = express();
-app.use(express.json());
+
 app.use(cookieParser());
+app.use(cors());
+app.use(express.json());
 
 // Middleware
 
@@ -19,6 +23,17 @@ connectDB();
 
 app.get("/admin", adminAuth, (req, res) => res.send("Admin Route"));
 app.get("/basic", userAuth, (req, res) => res.send("User Route"));
+
+// LOGOUT
+app.get("/logout", (req, res) => {
+  res.cookie("jwt", "", { maxAge: "1" });
+  res.status(201).json({
+    message: "User successfully Logged out",
+  });
+  res.redirect("/");
+});
+
+app.post("api/google-auth");
 
 app.listen(PORT, () => console.log(`Server Connected to port ${PORT}`));
 

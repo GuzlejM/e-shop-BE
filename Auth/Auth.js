@@ -120,42 +120,36 @@ exports.register = async (req, res, next) => {
   const { username, email, password, confirmPassword } = req.body;
 
   bcrypt.hash(password, 10).then(async (hash) => {
-    if (password !== confirmPassword) {
-      res
-        .status(400)
-        .json({ message: "Password and Confirm Password have to be same" });
-    } else {
-      await User.create({
-        username,
-        email,
-        password: hash,
-        confirmPassword,
-      })
-        .then((user) => {
-          const maxAge = 3 * 60 * 60;
-          const token = jwt.sign(
-            { id: user._id, username, role: user.role },
-            jwtSecret,
-            {
-              expiresIn: maxAge, // 3hrs in sec
-            }
-          );
-          res.cookie("jwt", token, {
-            httpOnly: true,
-            maxAge: maxAge * 1000, // 3hrs in ms
-          });
-          res.status(201).json({
-            message: "User successfully created",
-            user: user._id,
-          });
-        })
-        .catch((error) =>
-          res.status(401).json({
-            message: "User not successful created",
-            error: error.mesage,
-          })
+    await User.create({
+      username,
+      email,
+      password: hash,
+      confirmPassword: hash,
+    })
+      .then((user) => {
+        const maxAge = 3 * 60 * 60;
+        const token = jwt.sign(
+          { id: user._id, username, role: user.role },
+          jwtSecret,
+          {
+            expiresIn: maxAge, // 3hrs in sec
+          }
         );
-    }
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          maxAge: maxAge * 1000, // 3hrs in ms
+        });
+        res.status(201).json({
+          message: "User successfully created",
+          user: user._id,
+        });
+      })
+      .catch((error) =>
+        res.status(401).json({
+          message: "User not successful created",
+          error: error.mesage,
+        })
+      );
   });
 };
 
