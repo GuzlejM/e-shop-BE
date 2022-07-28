@@ -1,6 +1,9 @@
-const User = require("../model/User");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
+const Token = require("../model/Token");
+const User = require("../model/User");
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -48,9 +51,9 @@ exports.userAuth = (req, res, next) => {
   }
 };
 
-// DELETE - LOGIN - REGISTER- UPDATE -
+// -------------------- DELETE - LOGIN - REGISTER- UPDATE ---------------------
 
-// Delete user
+// ------------------ Delete user ------------------
 exports.deleteUser = async (req, res, next) => {
   const { id } = req.body;
   await User.findById(id)
@@ -65,9 +68,10 @@ exports.deleteUser = async (req, res, next) => {
     );
 };
 
-// Login
+// ------------------ LOGIN ------------------
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
+
   // Check if username and password is provided
   if (!email || !password) {
     return res.status(400).json({
@@ -97,10 +101,17 @@ exports.login = async (req, res, next) => {
             httpOnly: true,
             maxAge: maxAge * 1000, // 3hrs in ms
           });
-          res.status(201).json({
-            message: "User successfully Logged in",
-            user: user._id,
-          });
+          if (user.verified === false) {
+            return res.status(400).json({
+              message:
+                "Your email adress is not verified. Verify before logging in.",
+            });
+          } else {
+            res.status(201).json({
+              message: "User successfully Logged in",
+              user: user._id,
+            });
+          }
         } else {
           res.status(400).json({ message: "Login not succesful" });
         }
@@ -114,8 +125,7 @@ exports.login = async (req, res, next) => {
   }
 };
 
-// Register a new user
-
+// ------------------ Register a new user ------------------
 exports.register = async (req, res, next) => {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -135,12 +145,15 @@ exports.register = async (req, res, next) => {
             expiresIn: maxAge, // 3hrs in sec
           }
         );
+        const url = `${process.env.BASE_URL}/verify/${token}`;
+        sendEmail(email, "Email Verification", url);
+
         res.cookie("jwt", token, {
           httpOnly: true,
           maxAge: maxAge * 1000, // 3hrs in ms
         });
         res.status(201).json({
-          message: "User successfully created",
+          message: "An Email sent to your account",
           user: user._id,
         });
       })
@@ -153,8 +166,7 @@ exports.register = async (req, res, next) => {
   });
 };
 
-// Update
-
+// ------------------ Update ------------------
 exports.update = async (req, res, next) => {
   const { role, id } = req.body;
   // Verifying if role and id is presnt
