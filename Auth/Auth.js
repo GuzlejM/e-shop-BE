@@ -101,6 +101,7 @@ exports.login = async (req, res, next) => {
             httpOnly: true,
             maxAge: maxAge * 1000, // 3hrs in ms
           });
+          // email verification
           if (user.verified === false) {
             return res.status(400).json({
               message:
@@ -145,8 +146,9 @@ exports.register = async (req, res, next) => {
             expiresIn: maxAge, // 3hrs in sec
           }
         );
-        const url = `${process.env.BASE_URL}/verify/${token}`;
+        const url = `${process.env.BASE_URL}/verify/${user._id}/${token}`;
         sendEmail(email, "Email Verification", url);
+        console.log(url);
 
         res.cookie("jwt", token, {
           httpOnly: true,
