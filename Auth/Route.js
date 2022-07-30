@@ -15,7 +15,7 @@ router.route("/login").post(login);
 router.route("/register").post(register);
 router.route("/reset_password").post(sendResetPassword);
 router.route("/reset_password/:id/:token").put(updatePassword);
-router.route("/update").put(update);
+router.route("/update").put(updateRole);
 
 router.route("/updateRole").put(adminAuth, updateRole);
 router.route("/deleteUser").delete(adminAuth, deleteUser);
