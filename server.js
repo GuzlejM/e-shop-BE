@@ -2,9 +2,11 @@ const connectDB = require("./db");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 
 const { adminAuth, userAuth } = require("./Auth/Auth");
+const User = require("./model/User");
 
 const app = express();
 
@@ -31,6 +33,32 @@ app.get("/logout", (req, res) => {
     message: "User successfully Logged out",
   });
   res.redirect("/");
+});
+
+// VERIFY EMAIL LINK
+
+app.get("/verify/:id/:token", async (req, res) => {
+  const { token, id } = req.params;
+  console.log("Id:", id);
+
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+    console.log("User:", user);
+
+    if (!user) {
+      return res.status(400).send({ message: "invalid Link" });
+    }
+
+    if (user.verified === false) {
+      await User.updateOne({ _id: user.id, verified: true });
+    }
+
+    res.status(200).send({ message: "Email verified successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Email verification failed", error: error });
+  }
 });
 
 app.post("api/google-auth");

@@ -1,6 +1,10 @@
-const User = require("../model/User");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
+const resetPassword = require("../utils/resetPassword");
+const Token = require("../model/Token");
+const User = require("../model/User");
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -48,9 +52,9 @@ exports.userAuth = (req, res, next) => {
   }
 };
 
-// DELETE - LOGIN - REGISTER- UPDATE -
+// -------------------- DELETE - LOGIN - REGISTER - RESET PASSWORD - UPDATE ---------------------
 
-// Delete user
+// ------------------ Delete user ------------------
 exports.deleteUser = async (req, res, next) => {
   const { id } = req.body;
   await User.findById(id)
@@ -65,9 +69,10 @@ exports.deleteUser = async (req, res, next) => {
     );
 };
 
-// Login
+// ------------------ LOGIN ------------------
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
+
   // Check if username and password is provided
   if (!email || !password) {
     return res.status(400).json({
@@ -97,10 +102,18 @@ exports.login = async (req, res, next) => {
             httpOnly: true,
             maxAge: maxAge * 1000, // 3hrs in ms
           });
-          res.status(201).json({
-            message: "User successfully Logged in",
-            user: user._id,
-          });
+          // email verification
+          if (user.verified === false) {
+            return res.status(400).json({
+              message:
+                "Your email adress is not verified. Verify before logging in.",
+            });
+          } else {
+            res.status(201).json({
+              message: "User successfully Logged in",
+              user: user._id,
+            });
+          }
         } else {
           res.status(400).json({ message: "Login not succesful" });
         }
@@ -114,17 +127,15 @@ exports.login = async (req, res, next) => {
   }
 };
 
-// Register a new user
-
+// ------------------ Register a new user ------------------
 exports.register = async (req, res, next) => {
-  const { username, email, password, confirmPassword } = req.body;
+  const { username, email, password } = req.body;
 
   bcrypt.hash(password, 10).then(async (hash) => {
     await User.create({
       username,
       email,
       password: hash,
-      confirmPassword: hash,
     })
       .then((user) => {
         const maxAge = 3 * 60 * 60;
@@ -135,12 +146,16 @@ exports.register = async (req, res, next) => {
             expiresIn: maxAge, // 3hrs in sec
           }
         );
+        // SEND EMAIL VERIFICATION ON REGISTRATION
+        const url = `${process.env.BASE_URL}/verify/${user._id}/${token}`;
+        sendEmail(email, "Email Verification", url);
+
         res.cookie("jwt", token, {
           httpOnly: true,
           maxAge: maxAge * 1000, // 3hrs in ms
         });
         res.status(201).json({
-          message: "User successfully created",
+          message: "An Email sent to your account",
           user: user._id,
         });
       })
@@ -153,9 +168,52 @@ exports.register = async (req, res, next) => {
   });
 };
 
-// Update
+// ------------------SEND RESET PASSWORD ------------------
+exports.sendResetPassword = async (req, res, next) => {
+  const { email } = req.body;
+  // Check if email is provided
+  if (!email) {
+    return res.status(400).json({
+      message: "Email not present",
+    });
+  }
+  await User.findOne({ email })
+    .then((user) => {
+      const maxAge = 3 * 60 * 60;
+      const token = jwt.sign({ id: user._id }, jwtSecret, {
+        expiresIn: maxAge, // 3hrs in sec
+      });
+      // SEND EMAIL VERIFICATION ON REGISTRATION
+      const url = `${process.env.BASE_URL}/reset_password/${user._id}/${token}`;
+      resetPassword(email, "Password reset", url);
 
-exports.update = async (req, res, next) => {
+      res.status(201).json({
+        message: "A password reset sent to your account",
+        user: user._id,
+      });
+    })
+    .catch((error) =>
+      res.status(401).json({
+        message: "Reset email not sent successful created",
+        error: error.mesage,
+      })
+    );
+};
+
+// ------------------ Update Password ----------------
+exports.updatePassword = async (req, res, next) => {
+  const { password, id } = req.body;
+  bcrypt.hash(password, 10).then(async (hash) => {
+    await User.updateMany(
+      { id: id },
+      { $set: { password: hash, confirmPassword: hash } }
+    );
+    res.status("201").json({ message: "Update successful" });
+  });
+};
+
+// ------------------ Update Role ------------------
+exports.updateRole = async (req, res, next) => {
   const { role, id } = req.body;
   // Verifying if role and id is presnt
   if (role && id) {
