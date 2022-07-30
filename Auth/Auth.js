@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
+const resetPassword = require("../utils/resetPassword");
 const Token = require("../model/Token");
 const User = require("../model/User");
 
@@ -51,7 +52,7 @@ exports.userAuth = (req, res, next) => {
   }
 };
 
-// -------------------- DELETE - LOGIN - REGISTER- UPDATE ---------------------
+// -------------------- DELETE - LOGIN - REGISTER - RESET PASSWORD - UPDATE ---------------------
 
 // ------------------ Delete user ------------------
 exports.deleteUser = async (req, res, next) => {
@@ -128,14 +129,13 @@ exports.login = async (req, res, next) => {
 
 // ------------------ Register a new user ------------------
 exports.register = async (req, res, next) => {
-  const { username, email, password, confirmPassword } = req.body;
+  const { username, email, password } = req.body;
 
   bcrypt.hash(password, 10).then(async (hash) => {
     await User.create({
       username,
       email,
       password: hash,
-      confirmPassword: hash,
     })
       .then((user) => {
         const maxAge = 3 * 60 * 60;
@@ -180,17 +180,13 @@ exports.sendResetPassword = async (req, res, next) => {
   await User.findOne({ email })
     .then((user) => {
       const maxAge = 3 * 60 * 60;
-      const token = jwt.sign({ id: user._id, username }, jwtSecret, {
+      const token = jwt.sign({ id: user._id }, jwtSecret, {
         expiresIn: maxAge, // 3hrs in sec
       });
       // SEND EMAIL VERIFICATION ON REGISTRATION
       const url = `${process.env.BASE_URL}/reset_password/${user._id}/${token}`;
       resetPassword(email, "Password reset", url);
 
-      res.cookie("jwt", token, {
-        httpOnly: true,
-        maxAge: maxAge * 1000, // 3hrs in ms
-      });
       res.status(201).json({
         message: "A password reset sent to your account",
         user: user._id,
@@ -198,36 +194,23 @@ exports.sendResetPassword = async (req, res, next) => {
     })
     .catch((error) =>
       res.status(401).json({
-        message: "User not successful created",
+        message: "Reset email not sent successful created",
         error: error.mesage,
       })
     );
 };
-// // ------------------ Update Password ------------------
-// exports.updatePassword = async (req, res, next) => {
-//   const { password, confirmPassword, email } = req.body;
-//   // Check if has password and confirmation password
-//   if (password && confirmPassword) {
-//     // Check if password and confirmation password are the same
-//     if (password !== confirmPassword) {
-//       await User.findOne(email)
-//         .then((user) => {
 
-//         })
-//         .catch((error) => {
-//           res
-//             .status(400)
-//             .json({ message: "An error occurred", error: error.message });
-//         });
-//     } else {
-//       res.status(400).json({
-//         message: "Role is not admin",
-//       });
-//     }
-//   } else {
-//     res.status(400).json({ message: "Missing Password or Confrim Password" });
-//   }
-// };
+// ------------------ Update Password ----------------
+exports.updatePassword = async (req, res, next) => {
+  const { password, id } = req.body;
+  bcrypt.hash(password, 10).then(async (hash) => {
+    await User.updateMany(
+      { id: id },
+      { $set: { password: hash, confirmPassword: hash } }
+    );
+    res.status("201").json({ message: "Update successful" });
+  });
+};
 
 // ------------------ Update Role ------------------
 exports.updateRole = async (req, res, next) => {
