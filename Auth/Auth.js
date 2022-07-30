@@ -8,50 +8,6 @@ const User = require("../model/User");
 
 const jwtSecret = process.env.JWT_SECRET;
 
-// Admin authentication
-exports.adminAuth = (req, res, next) => {
-  const token = req.cookies.jwt;
-  if (token) {
-    jwt.verify(token, jwtSecret, (err, decodedToken) => {
-      if (err) {
-        return res.status(401).json({ message: "Not authorized" });
-      } else {
-        if (decodedToken.role !== "admin") {
-          return res.status(401).json({ message: "Not authorized" });
-        } else {
-          next();
-        }
-      }
-    });
-  } else {
-    return res
-      .status(401)
-      .json({ message: "Not authorized, token not available" });
-  }
-};
-
-//User authentication
-exports.userAuth = (req, res, next) => {
-  const token = req.cookies.jwt;
-  if (token) {
-    jwt.verify(token, jwtSecret, (err, decodedToken) => {
-      if (err) {
-        return res.status(401).json({ message: "Not authorized" });
-      } else {
-        if (decodedToken.role !== "Basic") {
-          return res.status(401).json({ message: "Not authorized" });
-        } else {
-          next();
-        }
-      }
-    });
-  } else {
-    return res
-      .status(401)
-      .json({ message: "Not authorized, token not available" });
-  }
-};
-
 // -------------------- DELETE - LOGIN - REGISTER - RESET PASSWORD - UPDATE ---------------------
 
 // ------------------ Delete user ------------------
@@ -149,7 +105,6 @@ exports.register = async (req, res, next) => {
         // SEND EMAIL VERIFICATION ON REGISTRATION
         const url = `${process.env.BASE_URL}/verify/${user._id}/${token}`;
         sendEmail(email, "Email Verification", url);
-
         res.cookie("jwt", token, {
           httpOnly: true,
           maxAge: maxAge * 1000, // 3hrs in ms
