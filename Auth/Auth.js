@@ -68,6 +68,7 @@ exports.login = async (req, res, next) => {
             res.status(201).json({
               message: "User successfully Logged in",
               user: user._id,
+              auth: token,
             });
           }
         } else {
@@ -105,6 +106,7 @@ exports.register = async (req, res, next) => {
         // SEND EMAIL VERIFICATION ON REGISTRATION
         const url = `${process.env.BASE_URL}/verify/${user._id}/${token}`;
         sendEmail(email, "Email Verification", url);
+
         res.cookie("jwt", token, {
           httpOnly: true,
           maxAge: maxAge * 1000, // 3hrs in ms
