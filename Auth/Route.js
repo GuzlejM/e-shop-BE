@@ -3,6 +3,7 @@ const router = express.Router();
 const { adminAuth } = require("../middleware/auth");
 const {
   deleteUser,
+  isLoggedIn,
   login,
   register,
   sendResetPassword,
@@ -11,6 +12,7 @@ const {
 } = require("./auth");
 
 router.route("/deleteUser").delete(deleteUser);
+router.route("/is_logged_in").get(isLoggedIn);
 router.route("/login").post(login);
 router.route("/register").post(register);
 router.route("/reset_password").post(sendResetPassword);

@@ -24,6 +24,23 @@ exports.deleteUser = async (req, res, next) => {
         .json({ message: "An error occurred", error: error.message })
     );
 };
+// ------------------ LOGGED IN ------------------
+exports.isLoggedIn = (req, res) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) return res.json(false);
+    jwt.verify(token, jwtSecret);
+    console.log(req);
+    res.send(true);
+  } catch (err) {
+    res.json(false);
+  }
+  // } else {
+  //   return res
+  //     .status(401)
+  //     .json({ message: "Not authorized, token not available" });
+  // }
+};
 
 // ------------------ LOGIN ------------------
 exports.login = async (req, res, next) => {
@@ -108,7 +125,7 @@ exports.register = async (req, res, next) => {
         sendEmail(email, "Email Verification", url);
 
         res.cookie("jwt", token, {
-          httpOnly: true,
+          httpOnly: false,
           maxAge: maxAge * 1000, // 3hrs in ms
         });
         res.status(201).json({
