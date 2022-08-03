@@ -5,13 +5,13 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 
-const { adminAuth, userAuth } = require("./Auth/Auth");
+const { adminAuth, userAuth } = require("./middleware/auth.js");
 const User = require("./model/User");
 
 const app = express();
 
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 
 // Middleware
