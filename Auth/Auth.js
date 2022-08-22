@@ -5,6 +5,7 @@ const sendEmail = require("../utils/sendEmail");
 const resetPassword = require("../utils/resetPassword");
 const Token = require("../model/Token");
 const User = require("../model/User");
+const { log } = require("util");
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -30,7 +31,6 @@ exports.isLoggedIn = (req, res) => {
     const token = req.cookies.jwt;
     if (!token) return res.json(false);
     jwt.verify(token, jwtSecret);
-    console.log(req);
     res.send(true);
   } catch (err) {
     res.json(false);

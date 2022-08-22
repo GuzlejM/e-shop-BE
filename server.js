@@ -32,18 +32,15 @@ app.get("/logout", (req, res) => {
   res.status(201).json({
     message: "User successfully Logged out",
   });
-  res.redirect("/");
 });
 
 // VERIFY EMAIL LINK
 
 app.get("/verify/:id/:token", async (req, res) => {
   const { token, id } = req.params;
-  console.log("Id:", id);
 
   try {
     const user = await User.findOne({ _id: req.params.id });
-    console.log("User:", user);
 
     if (!user) {
       return res.status(400).send({ message: "invalid Link" });
