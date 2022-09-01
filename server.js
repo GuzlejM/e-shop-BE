@@ -1,4 +1,4 @@
-const { connectDB } = require("./db");
+const connectDB = require("./db");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const express = require("express");
@@ -47,7 +47,8 @@ app.get("/verify/:id/:token", async (req, res) => {
     }
 
     if (user.verified === false) {
-      await User.updateOne({ _id: user.id, verified: true });
+      console.log(user);
+      await user.updateOne({ _id: user.id, verified: true });
     }
 
     res.status(200).send({ message: "Email verified successfully" });
@@ -57,8 +58,6 @@ app.get("/verify/:id/:token", async (req, res) => {
       .send({ message: "Email verification failed", error: error });
   }
 });
-
-app.post("api/google-auth");
 
 app.listen(PORT, () => console.log(`Server Connected to port ${PORT}`));
 
