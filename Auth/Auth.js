@@ -182,7 +182,7 @@ exports.updatePassword = async (req, res, next) => {
       { id: id },
       { $set: { password: hash, confirmPassword: hash } }
     );
-    res.status("201").json({ message: "Update successful" });
+    res.status(201).json({ message: "Update successful" });
   });
 };
 
@@ -202,11 +202,11 @@ exports.updateRole = async (req, res, next) => {
               //Monogodb error checker
               if (err) {
                 res
-                  .status("400")
+                  .status(400)
                   .json({ message: "An error occurred", error: err.message });
                 process.exit(1);
               }
-              res.status("201").json({ message: "Update successful", user });
+              res.status(201).json({ message: "Update successful", user });
             });
           } else {
             res.status(400).json({ message: "User is already an Admin" });

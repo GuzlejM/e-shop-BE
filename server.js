@@ -37,10 +37,10 @@ app.get("/logout", (req, res) => {
 // VERIFY EMAIL LINK
 
 app.get("/verify/:id/:token", async (req, res) => {
-  const { token, id } = req.params;
+  const { id } = req.params;
 
   try {
-    const user = await User.findOne({ _id: req.params.id });
+    const user = await User.findOne({ _id: id });
 
     if (!user) {
       return res.status(400).send({ message: "invalid Link" });
@@ -50,7 +50,7 @@ app.get("/verify/:id/:token", async (req, res) => {
       console.log(user);
       await user.updateOne({ _id: user.id, verified: true });
     }
-
+    res.cookie("jwt", "", { maxAge: "1" });
     res.status(200).send({ message: "Email verified successfully" });
   } catch (error) {
     res
