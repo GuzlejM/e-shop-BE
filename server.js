@@ -26,6 +26,8 @@ connectDB();
 app.get("/admin", adminAuth, (req, res) => res.send("Admin Route"));
 app.get("/basic", userAuth, (req, res) => res.send("User Route"));
 
+//TODO Move LOGOUT, VERIFY into AUTH File
+
 // LOGOUT
 app.get("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: "1" });
