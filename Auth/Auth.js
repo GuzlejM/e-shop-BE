@@ -15,7 +15,7 @@ const jwtSecret = process.env.JWT_SECRET;
 exports.deleteUser = async (req, res, next) => {
   const { id } = req.body;
   await User.findById(id)
-    .then((user) => user.remove())
+    .then((user) => user.rewmove())
     .then((user) =>
       res.status(201).json({ message: "User successfully deleted", user })
     )

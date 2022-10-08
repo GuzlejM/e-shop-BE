@@ -17,7 +17,7 @@ app.use(express.json());
 // Middleware
 
 app.use("/api/auth", require("./Auth/route"));
-app.use("/api/shop", require("./Category/route"));
+app.use("/api/shop", require("./Categories/route"));
 
 const PORT = 5000;
 
