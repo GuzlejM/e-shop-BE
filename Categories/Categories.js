@@ -13,11 +13,12 @@ const Test = require("../model/Test");
 //     );
 // };
 
-exports.createTestCollection = async (req, res, next) => {
-  await Test.createCollection()
-    .then((data) => console.log(data))
-    .then((data) =>
-      res.status(200).json({ message: "Collection created", data })
+exports.saveToCollection = async (req, res, next) => {
+  const title = req.body;
+  await Test.create(title)
+    .then((title) => console.log(title))
+    .then((title) =>
+      res.status(200).json({ message: "Collection created", title: title })
     )
     .catch((error) =>
       res
