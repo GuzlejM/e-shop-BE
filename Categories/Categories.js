@@ -13,15 +13,15 @@ const Test = require("../model/Test");
 //     );
 // };
 
-exports.addCategory = async (req, res, next) => {
-  const title = req.body.title;
-  console.log(title);
-  await Test.create(title)
-    .then(res.status(201).json({ message: "addedCategory", title }))
+exports.createTestCollection = async (req, res, next) => {
+  await Test.createCollection()
+    .then((data) => console.log(data))
+    .then((data) =>
+      res.status(200).json({ message: "Collection created", data })
+    )
     .catch((error) =>
-      res.status(401).json({
-        message: "User not successful created",
-        error: error.mesage,
-      })
+      res
+        .status(401)
+        .json({ message: "An error occurred", error: error.message })
     );
 };
