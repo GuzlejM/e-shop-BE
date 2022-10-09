@@ -14,15 +14,27 @@ const Test = require("../model/Test");
 // };
 
 exports.saveToCollection = async (req, res, next) => {
-  const title = req.body;
-  await Test.create(title)
+  const { title } = req.body;
+  await (
+    await Test.create({ title })
+  )
+    .save()
     .then((title) => console.log(title))
     .then((title) =>
-      res.status(200).json({ message: "Collection created", title: title })
+      res.status(200).json({ message: "record created", title: title })
     )
     .catch((error) =>
       res
         .status(401)
         .json({ message: "An error occurred", error: error.message })
     );
+  // await Test.save({ title })
+  //   .then((title) =>
+  //     res.status(200).json({ message: "Record saved to DB", title: title })
+  //   )
+  //   .catch((error) =>
+  //     res
+  //       .status(401)
+  //       .json({ message: "An error occurred", error: error.message })
+  //   );
 };

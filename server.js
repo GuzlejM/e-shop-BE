@@ -2,8 +2,6 @@ const connectDB = require("./db");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const express = require("express");
-const jwt = require("jsonwebtoken");
-const { OAuth2Client } = require("google-auth-library");
 
 const { adminAuth, userAuth } = require("./middleware/auth.js");
 const User = require("./model/User");
