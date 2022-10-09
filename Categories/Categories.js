@@ -14,12 +14,9 @@ const Test = require("../model/Test");
 // };
 
 exports.saveToCollection = async (req, res, next) => {
-  const { title } = req.body;
-  await (
-    await Test.create({ title })
-  )
-    .save()
-    .then((title) => console.log(title))
+  const { title } = new Test({ title: req.body.title });
+  await Test.create({ title })
+    .then((title) => console.log(title, title))
     .then((title) =>
       res.status(200).json({ message: "record created", title: title })
     )

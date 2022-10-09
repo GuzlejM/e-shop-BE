@@ -4,5 +4,5 @@ const TestSchema = new Mongoose.Schema({
   title: { type: String },
 });
 
-const Test = Mongoose.model("yo", TestSchema, "yo");
+const Test = Mongoose.model("test", TestSchema, "test");
 module.exports = Test;
