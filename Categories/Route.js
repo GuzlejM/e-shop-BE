@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { saveToCollection } = require("./categories");
+const { createCategory } = require("./categories");
 
-router.route("/categories").post(saveToCollection);
+router.route("/categories").post(createCategory);
 
 module.exports = router;
